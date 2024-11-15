@@ -87,7 +87,6 @@ class CompanyControllerTest {
         for (int i = 0; i < fetchedCompanies.size(); i++) {
             final Company fetchedCompany = fetchedCompanies.get(i);
             final Company givenCompany = givenCompanies.get(i);
-            assertThat(fetchedCompany.getId()).isEqualTo(givenCompany.getId());
             assertThat(fetchedCompany.getName()).isEqualTo(givenCompany.getName());
             assertThat(fetchedCompany.getEmployees()).hasSize(givenCompany.getEmployees().size());
             for (int j = 0; j < fetchedCompany.getEmployees().size(); j++) {
@@ -97,7 +96,6 @@ class CompanyControllerTest {
                 assertThat(fetchedEmployee.getName()).isEqualTo(givenEmployee.getName());
                 assertThat(fetchedEmployee.getAge()).isEqualTo(givenEmployee.getAge());
                 assertThat(fetchedEmployee.getGender()).isEqualTo(givenEmployee.getGender());
-                assertThat(fetchedEmployee.getSalary()).isEqualTo(givenEmployee.getSalary());
             }
         }
     }
@@ -113,9 +111,8 @@ class CompanyControllerTest {
         // Then
         client.perform(MockMvcRequestBuilders.get(String.format("/companies?pageIndex=%s&pageSize=%s", pageIndex, pageSize)))
             .andExpect(MockMvcResultMatchers.status().isOk())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.content", hasSize(1)))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].id").value(the5thEmployeeCompanyInPage3.get().getId()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].name").value(the5thEmployeeCompanyInPage3.get().getName()));
+            .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)))
+            .andExpect(MockMvcResultMatchers.jsonPath("$[0].name").value(the5thEmployeeCompanyInPage3.get().getName()));
     }
 
     @Test
@@ -148,7 +145,6 @@ class CompanyControllerTest {
         // Then
         client.perform(MockMvcRequestBuilders.get("/companies/" + companyGiven.getId()))
             .andExpect(MockMvcResultMatchers.status().isOk())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(companyGiven.getId()))
             .andExpect(MockMvcResultMatchers.jsonPath("$.name").value(companyGiven.getName()));
     }
 
@@ -165,7 +161,6 @@ class CompanyControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(requestBody))
             .andExpect(MockMvcResultMatchers.status().isCreated())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.id").isNotEmpty())
             .andExpect(MockMvcResultMatchers.jsonPath("$.name").value(givenName));
     }
 
@@ -183,7 +178,6 @@ class CompanyControllerTest {
                 .content(requestBody))
             .andExpect(MockMvcResultMatchers.status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(idToUpdate))
             .andExpect(MockMvcResultMatchers.jsonPath("$.name").value(nameToUpdate));
     }
 

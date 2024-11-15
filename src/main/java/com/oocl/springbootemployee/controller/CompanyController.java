@@ -1,5 +1,7 @@
 package com.oocl.springbootemployee.controller;
 
+import com.oocl.springbootemployee.controller.dto.CompanyResponse;
+import com.oocl.springbootemployee.controller.mapper.CompanyMapper;
 import com.oocl.springbootemployee.model.Company;
 import com.oocl.springbootemployee.model.Employee;
 import com.oocl.springbootemployee.service.CompanyService;
@@ -24,18 +26,21 @@ public class CompanyController {
 
     private final CompanyService companyService;
 
-    public CompanyController(CompanyService companyService) {
+    private final CompanyMapper companyMapper;
+
+    public CompanyController(CompanyService companyService, CompanyMapper companyMapper) {
         this.companyService = companyService;
+        this.companyMapper = companyMapper;
     }
 
     @GetMapping
-    public List<Company> getCompanies() {
-        return companyService.findAll();
+    public List<CompanyResponse> getCompanies() {
+        return companyMapper.toResponses(companyService.findAll());
     }
 
     @GetMapping("/{id}")
-    public Company getCompanyById(@PathVariable Integer id) {
-        return companyService.findById(id);
+    public CompanyResponse getCompanyById(@PathVariable Integer id) {
+        return companyMapper.toResponse(companyService.findById(id));
     }
 
     @GetMapping("/{id}/employees")
@@ -44,20 +49,20 @@ public class CompanyController {
     }
 
     @GetMapping(params = {"pageIndex", "pageSize"})
-    public Page<Company> getCompaniesByPagination(@RequestParam Integer pageIndex,
+    public List<CompanyResponse> getCompaniesByPagination(@RequestParam Integer pageIndex,
                                                   @RequestParam Integer pageSize) {
-        return companyService.findAll(pageIndex, pageSize);
+        return companyMapper.toResponses(companyService.findAll(pageIndex, pageSize).toList());
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Company addCompany(@RequestBody Company company) {
-        return companyService.create(company);
+    public CompanyResponse addCompany(@RequestBody Company company) {
+        return companyMapper.toResponse(companyService.create(company));
     }
 
     @PutMapping("/{id}")
-    public Company updateCompany(@PathVariable Integer id, @RequestBody Company company) {
-        return companyService.update(id, company);
+    public CompanyResponse updateCompany(@PathVariable Integer id, @RequestBody Company company) {
+        return companyMapper.toResponse(companyService.update(id, company));
     }
 
     @DeleteMapping("/{id}")
