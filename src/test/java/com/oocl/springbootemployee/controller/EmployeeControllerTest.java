@@ -56,8 +56,7 @@ class EmployeeControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$[4].id").value(givenEmployees.get(4).getId()))
             .andExpect(MockMvcResultMatchers.jsonPath("$[0].name").value(givenEmployees.get(0).getName()))
             .andExpect(MockMvcResultMatchers.jsonPath("$[0].age").value(givenEmployees.get(0).getAge()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].gender").value(givenEmployees.get(0).getGender().name()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].salary").value(givenEmployees.get(0).getSalary()));
+            .andExpect(MockMvcResultMatchers.jsonPath("$[0].gender").value(givenEmployees.get(0).getGender().name()));
     }
 
     @Test
@@ -72,8 +71,7 @@ class EmployeeControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(givenEmployee.getId()))
             .andExpect(MockMvcResultMatchers.jsonPath("$.name").value(givenEmployee.getName()))
             .andExpect(MockMvcResultMatchers.jsonPath("$.age").value(givenEmployee.getAge()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.gender").value(givenEmployee.getGender().name()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.salary").value(givenEmployee.getSalary()));
+            .andExpect(MockMvcResultMatchers.jsonPath("$.gender").value(givenEmployee.getGender().name()));
     }
 
 
@@ -96,9 +94,7 @@ class EmployeeControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$[*].age")
                 .value(containsInAnyOrder(femaleEmployee.getAge(), femaleEmployee2.getAge())))
             .andExpect(MockMvcResultMatchers.jsonPath("$[*].gender")
-                .value(containsInAnyOrder(femaleEmployee.getGender().name(), femaleEmployee2.getGender().name())))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[*].salary")
-                .value(containsInAnyOrder(femaleEmployee.getSalary(), femaleEmployee2.getSalary())));
+                .value(containsInAnyOrder(femaleEmployee.getGender().name(), femaleEmployee2.getGender().name())));
     }
 
     @Test
@@ -127,8 +123,7 @@ class EmployeeControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$.id").isNumber())
             .andExpect(MockMvcResultMatchers.jsonPath("$.name").value(givenName))
             .andExpect(MockMvcResultMatchers.jsonPath("$.age").value(givenAge))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.gender").value(givenGender.name()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.salary").value(givenSalary));
+            .andExpect(MockMvcResultMatchers.jsonPath("$.gender").value(givenGender.name()));
         List<Employee> employees = employeeRepository.findAll();
         assertThat(employees).hasSize(1);
         assertThat(employees.get(0).getId()).isNotNull();
@@ -166,15 +161,13 @@ class EmployeeControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$.id").isNumber())
             .andExpect(MockMvcResultMatchers.jsonPath("$.name").value(givenName))
             .andExpect(MockMvcResultMatchers.jsonPath("$.age").value(givenAge))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.gender").value(givenGender.name()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.salary").value(givenSalary));
+            .andExpect(MockMvcResultMatchers.jsonPath("$.gender").value(givenGender.name()));
         List<Employee> employees = employeeRepository.findAll();
         assertThat(employees).hasSize(5);
         assertThat(employees.get(0).getId()).isNotNull();
         assertThat(employees.get(0).getName()).isEqualTo(givenName);
         assertThat(employees.get(0).getAge()).isEqualTo(givenAge);
         assertThat(employees.get(0).getGender()).isEqualTo(givenGender);
-        assertThat(employees.get(0).getSalary()).isEqualTo(givenSalary);
     }
 
     @Test
@@ -200,12 +193,11 @@ class EmployeeControllerTest {
                 .param("pageIndex", "1")
                 .param("pageSize", "2"))
             .andExpect(MockMvcResultMatchers.status().isOk())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.content", hasSize(2)))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].id").value(givenEmployees.get(2).getId()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.content[1].id").value(givenEmployees.get(3).getId()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].name").value(givenEmployees.get(2).getName()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].age").value(givenEmployees.get(2).getAge()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].gender").value(givenEmployees.get(2).getGender().name()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].salary").value(givenEmployees.get(2).getSalary()));
+            .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(2)))
+            .andExpect(MockMvcResultMatchers.jsonPath("$[0].id").value(givenEmployees.get(2).getId()))
+            .andExpect(MockMvcResultMatchers.jsonPath("$[1].id").value(givenEmployees.get(3).getId()))
+            .andExpect(MockMvcResultMatchers.jsonPath("$[0].name").value(givenEmployees.get(2).getName()))
+            .andExpect(MockMvcResultMatchers.jsonPath("$[0].age").value(givenEmployees.get(2).getAge()))
+            .andExpect(MockMvcResultMatchers.jsonPath("$[0].gender").value(givenEmployees.get(2).getGender().name()));
     }
 }
