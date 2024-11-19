@@ -74,6 +74,15 @@ class EmployeeControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$.gender").value(givenEmployee.getGender().name()));
     }
 
+    @Test
+    void should_throw_employee_when_get_by_id_given_not_exists() throws Exception {
+        // Given
+
+        // When
+        // Then
+        client.perform(MockMvcRequestBuilders.get("/employees/" + 12389))
+            .andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
 
     @Test
     void should_return_employees_when_get_by_gender() throws Exception {
