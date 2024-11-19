@@ -10,5 +10,6 @@ create table if not exists employee (
     gender     varchar(255) null,
     name       varchar(255) null,
     salary     int          null,
+    is_active     boolean          null,
     foreign key (company_id) references company (id)
 );
