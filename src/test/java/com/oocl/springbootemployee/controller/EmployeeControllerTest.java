@@ -8,11 +8,14 @@ import com.oocl.springbootemployee.model.Employee;
 import com.oocl.springbootemployee.model.Gender;
 import com.oocl.springbootemployee.repository.EmployeeRepository;
 import java.util.List;
+import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -20,6 +23,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@AutoConfigureJsonTesters
 class EmployeeControllerTest {
 
     @Autowired
@@ -27,6 +31,9 @@ class EmployeeControllerTest {
 
     @Autowired
     private EmployeeRepository employeeRepository;
+
+    @Autowired
+    private JacksonTester<List<Employee>> employeesJacksonTester;
 
     @BeforeEach
     void setUp() {
@@ -46,17 +53,18 @@ class EmployeeControllerTest {
 
         //when
         //then
-        client.perform(MockMvcRequestBuilders.get("/employees"))
+        final String jsonResponse = client.perform(MockMvcRequestBuilders.get("/employees"))
             .andExpect(MockMvcResultMatchers.status().isOk())
-            .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(5)))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].id").value(givenEmployees.get(0).getId()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[1].id").value(givenEmployees.get(1).getId()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[2].id").value(givenEmployees.get(2).getId()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[3].id").value(givenEmployees.get(3).getId()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[4].id").value(givenEmployees.get(4).getId()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].name").value(givenEmployees.get(0).getName()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].age").value(givenEmployees.get(0).getAge()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].gender").value(givenEmployees.get(0).getGender().name()));
+            .andReturn().getResponse().getContentAsString();
+
+        final List<Employee> employeesResult = employeesJacksonTester.parseObject(jsonResponse);
+        assertThat(employeesResult)
+            .usingRecursiveFieldByFieldElementComparator(
+                RecursiveComparisonConfiguration.builder()
+                    .withComparedFields("id", "age", "name", "gender")
+                    .build()
+            )
+            .isEqualTo(givenEmployees);
     }
 
     @Test
