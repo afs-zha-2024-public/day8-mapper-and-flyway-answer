@@ -10,6 +10,7 @@ import com.oocl.springbootemployee.model.Gender;
 import com.oocl.springbootemployee.repository.CompanyRepository;
 import com.oocl.springbootemployee.repository.EmployeeRepository;
 import java.util.List;
+import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -56,8 +58,6 @@ class CompanyControllerTest {
     void setUp() {
         companyRepository.deleteAll();
         companyRepository.flush();
-        employeeRepository.deleteAll();
-        employeeRepository.flush();
 
         john_smith = new Employee( "John Smith", 32, Gender.MALE, 5000.0);
         jane_johnson = new Employee( "Jane Johnson", 28, Gender.FEMALE, 6000.0);
@@ -78,26 +78,21 @@ class CompanyControllerTest {
 
         // When
         final MvcResult result = client.perform(MockMvcRequestBuilders.get("/companies")).andReturn();
+        final MockHttpServletResponse response = result.getResponse();
 
         // Then
-        assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
-        assertThat(result.getResponse().getContentType()).isEqualTo(MediaType.APPLICATION_JSON.toString());
-        final List<Company> fetchedCompanies = companyListJacksonTester.parseObject(result.getResponse().getContentAsString());
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.getContentType()).isEqualTo(MediaType.APPLICATION_JSON.toString());
+        final List<Company> fetchedCompanies = companyListJacksonTester.parseObject(response.getContentAsString());
         assertThat(fetchedCompanies).hasSameSizeAs(givenCompanies);
-        for (int i = 0; i < fetchedCompanies.size(); i++) {
-            final Company fetchedCompany = fetchedCompanies.get(i);
-            final Company givenCompany = givenCompanies.get(i);
-            assertThat(fetchedCompany.getName()).isEqualTo(givenCompany.getName());
-            assertThat(fetchedCompany.getEmployees()).hasSize(givenCompany.getEmployees().size());
-            for (int j = 0; j < fetchedCompany.getEmployees().size(); j++) {
-                final Employee fetchedEmployee = fetchedCompany.getEmployees().get(i);
-                final Employee givenEmployee = givenCompany.getEmployees().get(i);
-                assertThat(fetchedEmployee.getId()).isEqualTo(givenEmployee.getId());
-                assertThat(fetchedEmployee.getName()).isEqualTo(givenEmployee.getName());
-                assertThat(fetchedEmployee.getAge()).isEqualTo(givenEmployee.getAge());
-                assertThat(fetchedEmployee.getGender()).isEqualTo(givenEmployee.getGender());
-            }
-        }
+        assertThat(fetchedCompanies)
+            .usingRecursiveComparison(
+                RecursiveComparisonConfiguration.builder()
+                    .withComparedFields("name", "employees")
+                    .withComparedFields("employees.id", "employees.age", "employees.name", "employees.gender")
+                    .build()
+            )
+            .isEqualTo(givenCompanies);
     }
 
     @Test
@@ -123,12 +118,13 @@ class CompanyControllerTest {
         // When
         final var result =
             client.perform(MockMvcRequestBuilders.get("/companies/" + givenCompanyId + "/employees")).andReturn();
+        final MockHttpServletResponse response = result.getResponse();
 
         // Then
-        assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
-        assertThat(result.getResponse().getContentType()).isEqualTo(MediaType.APPLICATION_JSON.toString());
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.getContentType()).isEqualTo(MediaType.APPLICATION_JSON.toString());
         final List<Employee> fetchedEmployees =
-            employeeListJacksonTester.parseObject(result.getResponse().getContentAsString());
+            employeeListJacksonTester.parseObject(response.getContentAsString());
 
         assertThat(fetchedEmployees).hasSize(2);
         assertThat(fetchedEmployees.stream().map(Employee::getId).toList())
@@ -189,9 +185,10 @@ class CompanyControllerTest {
         // When
         final var result =
             client.perform(MockMvcRequestBuilders.delete("/companies/" + toDeleteCompanyId)).andReturn();
+        final MockHttpServletResponse response = result.getResponse();
 
         // Then
-        assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
         assertThat(companyRepository.findAll()).hasSize(4);
     }
 }
